@@ -264,7 +264,48 @@
   .weather {
     margin: 30px 0 0;
     border-top: 1px solid var(--hair);
+    border-bottom: 1px solid var(--hair);
+    padding-bottom: 18px;
   }
+
+  .weather[open] { padding-bottom: 26px; }
+
+  .weather > summary {
+    cursor: pointer;
+    padding: 15px 0;
+    list-style: none;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 3px 12px;
+    align-items: baseline;
+  }
+
+  .weather > summary::-webkit-details-marker { display: none; }
+
+  .weather > summary b { font-size: 17px; font-weight: 800; letter-spacing: -0.01em; }
+
+  .weather > summary span {
+    font-family: var(--serif);
+    font-size: 14.5px;
+    color: var(--lichen);
+  }
+
+  .weather > summary::after {
+    content: "";
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: start;
+  }
+
+  .weather > summary b::before {
+    content: "+ ";
+    color: var(--red);
+    font-weight: 700;
+  }
+
+  .weather[open] > summary b::before { content: "– "; }
+
+  .weather > summary:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
 
   .weather h3 {
     font-size: 15px;
@@ -435,8 +476,11 @@
     <figcaption>Форма субботнего дня: 17 км по прямому варианту, 21–23 км если держаться размеченных шлаков. Набор 700–790 м. Схема, не GPS-профиль.</figcaption>
   </figure>
 
-  <div class="weather">
-    <h3>Прогноз</h3>
+  <details class="weather fold">
+    <summary>
+      <b>Прогноз</b>
+      <span>Дождь приходит в ночь на субботу. Днём сухо, но на плато порывы до 75 км/ч</span>
+    </summary>
     <p class="src">Осадки по частям суток, не суммой за день. В миллиметрах, если модель их даёт; иначе вероятность. Обновляется при загрузке страницы.</p>
     <table class="wxtab">
       <thead><tr><th>Когда</th><th>Чоха</th><th>Изеры, 843 м</th><th>Вроцлав</th></tr></thead>
@@ -451,19 +495,7 @@
       <tbody id="wxnow"><tr><td>Вроцлав, 128 м</td><td>23°</td><td>ветер 4 м/с</td><td>осадки 0,2 мм<br><span style="color:#5c6764;font-weight:400">14:00, 2026-09-03</span></td></tr><tr><td>Еленя-Гура, 342 м</td><td>20,5°</td><td>ветер 4 м/с</td><td>осадки 0,9 мм<br><span style="color:#5c6764;font-weight:400">14:00, 2026-09-03</span></td></tr><tr><td>Снежка, 1602 м</td><td>9°</td><td>ветер 8 м/с</td><td>осадки 4,5 мм<br><span style="color:#5c6764;font-weight:400">14:00, 2026-09-03</span></td></tr></tbody>
     </table>
 
-    <h3>Метеорограммы ICM, meteo.pl</h3>
-    <p class="src">Модель UM Варшавского университета, шаг сетки 4 км — она лучше остальных отрабатывает горы. Панель «opad» показывает осадки по часам. Картинки тянутся с meteo.pl напрямую и подхватывают свежий прогон при каждой загрузке.</p>
-    <div class="mgram">
-      <a data-mg="444" href="https://www.meteo.pl/um/metco/mgram_pict.php?ntype=0u&amp;row=444&amp;col=150&amp;lang=pl" target="_blank" rel="noopener">
-        <img alt="Метеорограмма ICM для Изер" loading="lazy">
-      </a>
-      <p>Изеры: высота ячейки 320–636–925 м, то есть это и Сверадув, и Гала Изерска.</p>
-      <a data-mg="437" href="https://www.meteo.pl/um/metco/mgram_pict.php?ntype=0u&amp;row=437&amp;col=150&amp;lang=pl" target="_blank" rel="noopener">
-        <img alt="Метеорограмма ICM для района Чохи" loading="lazy">
-      </a>
-      <p>Чоха и долина Квисы. Тапни, чтобы открыть в полный размер.</p>
-    </div>
-  </div>
+  </details>
 
   <div class="map-head">
     <button type="button" data-day="all" aria-pressed="true">Весь маршрут</button>
@@ -657,6 +689,22 @@
     <p>Файл с теми же точками для Organic Maps, Maps.me или Google Earth. В горах интернета не будет, а карта нужна — загрузи заранее.</p>
     <a id="kml" download="czocha-izery-4-6.09.kml" href="#">Скачать KML, 15 точек</a>
   </div>
+
+  <section>
+    <p class="day-no">На всякий случай</p>
+    <h2>Метеорограммы ICM</h2>
+    <p class="day-sub">Модель UM Варшавского университета, шаг сетки 4 км — она лучше остальных отрабатывает горы. Панель «opad» показывает осадки по часам. Картинки тянутся с meteo.pl напрямую и подхватывают свежий прогон при каждой загрузке.</p>
+    <div class="mgram">
+      <a data-mg="444" href="https://www.meteo.pl/um/metco/mgram_pict.php?ntype=0u&amp;row=444&amp;col=150&amp;lang=pl" target="_blank" rel="noopener">
+        <img alt="Метеорограмма ICM для Изер" loading="lazy">
+      </a>
+      <p>Изеры: высота ячейки 320–636–925 м, то есть это и Сверадув, и Гала Изерска.</p>
+      <a data-mg="437" href="https://www.meteo.pl/um/metco/mgram_pict.php?ntype=0u&amp;row=437&amp;col=150&amp;lang=pl" target="_blank" rel="noopener">
+        <img alt="Метеорограмма ICM для района Чохи" loading="lazy">
+      </a>
+      <p>Чоха и долина Квисы. Тапни, чтобы открыть в полный размер.</p>
+    </div>
+  </section>
 
   <footer>
     Карта — OpenStreetMap, автомобильные участки посчитаны OSRM, пеший трек — BRouter. Наблюдения — IMGW. Почасовой прогноз — Open-Meteo. Метеорограммы — ICM meteo.pl. У IMGW нет открытого API прогноза по координатам, у ICM он есть, но под токеном — метеорограммы отдаются без него.
