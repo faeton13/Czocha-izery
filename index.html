@@ -1,0 +1,901 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Чоха и Изеры · 4–6 сентября</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+
+<style>
+  :root {
+    --paper: #e9ebe7;
+    --paper-2: #f3f4f1;
+    --ink: #22282a;
+    --lichen: #5c6764;
+    --hair: #c9cdc7;
+
+    --red: #b23a2e;
+    --blue: #1f5c8b;
+    --green: #3e7d4b;
+    --gold: #b08a1c;
+    --slate: #5c6764;
+
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    --serif: Georgia, "Iowan Old Style", "Times New Roman", serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 18px 72px;
+  }
+
+  /* ---- painted trail blaze: red band, white band, red band ---- */
+  .blaze {
+    height: 22px;
+    background: linear-gradient(
+      to bottom,
+      var(--red) 0 7px,
+      var(--paper-2) 7px 15px,
+      var(--red) 15px 22px
+    );
+  }
+
+  /* ---- hero ---- */
+  header { padding: 34px 0 10px; }
+
+  h1 {
+    font-size: clamp(38px, 12vw, 68px);
+    line-height: 0.95;
+    letter-spacing: -0.035em;
+    font-weight: 800;
+    margin: 0;
+  }
+
+  .dates {
+    font-family: var(--serif);
+    font-size: 17px;
+    color: var(--lichen);
+    margin: 12px 0 0;
+    max-width: 34em;
+  }
+
+  /* ---- ridge ---- */
+  figure { margin: 26px 0 0; }
+
+  figure svg { width: 100%; height: auto; display: block; }
+
+  figcaption {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 14px;
+    color: var(--lichen);
+    margin-top: 8px;
+  }
+
+  /* ---- map ---- */
+  .map-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 40px 0 10px;
+  }
+
+  .map-head button {
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    background: transparent;
+    border: 1px solid var(--hair);
+    padding: 6px 13px;
+    cursor: pointer;
+  }
+
+  .map-head button:hover { background: var(--paper-2); }
+
+  .map-head button[aria-pressed="true"] {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--paper-2);
+  }
+
+  .map-head button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+  #map {
+    height: 340px;
+    border: 1px solid var(--hair);
+    background: var(--paper-2);
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 18px;
+    margin: 12px 0 0;
+    font-size: 13.5px;
+    color: var(--lichen);
+  }
+
+  .legend span::before {
+    content: "";
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    margin-right: 6px;
+    background: currentColor;
+    vertical-align: 1px;
+  }
+
+  .legend span.ln::before {
+    width: 18px;
+    height: 3px;
+    border-radius: 0;
+    vertical-align: 4px;
+  }
+
+  .grab {
+    margin: 34px 0 0;
+    padding: 18px 20px;
+    border: 1px solid var(--hair);
+    background: var(--paper-2);
+    max-width: 36em;
+  }
+
+  .grab p { margin: 0 0 14px; font-size: 15px; color: var(--lichen); max-width: 32em; }
+
+  .grab a {
+    display: inline-block;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--paper-2);
+    background: var(--ink);
+    padding: 10px 18px;
+    text-decoration: none;
+  }
+
+  .grab a:hover { background: var(--red); }
+
+  .grab a:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+
+  /* ---- days ---- */
+  section { margin-top: 52px; }
+
+  .day-no {
+    font-family: var(--serif);
+    font-size: 15px;
+    color: var(--lichen);
+    margin: 0 0 2px;
+  }
+
+  h2 {
+    font-size: 27px;
+    letter-spacing: -0.02em;
+    font-weight: 800;
+    margin: 0 0 4px;
+  }
+
+  .day-sub {
+    font-family: var(--serif);
+    color: var(--lichen);
+    margin: 0 0 22px;
+    max-width: 36em;
+  }
+
+  ol.stops {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 0 26px;
+    border-left: 3px solid var(--hair);
+  }
+
+  ol.stops li {
+    position: relative;
+    padding: 0 0 24px;
+  }
+
+  ol.stops li:last-child { padding-bottom: 0; }
+
+  ol.stops li::before {
+    content: "";
+    position: absolute;
+    left: -33px;
+    top: 7px;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--dot, var(--slate));
+    box-shadow: 0 0 0 3px var(--paper);
+  }
+
+  .time {
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--lichen);
+    display: block;
+  }
+
+  .stop-name {
+    display: block;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    background: none;
+    border: 0;
+    padding: 0;
+    margin: 1px 0 3px;
+    font-family: var(--sans);
+    color: var(--ink);
+    text-align: left;
+    cursor: pointer;
+    border-bottom: 1px solid var(--hair);
+  }
+
+  .stop-name:hover { border-bottom-color: var(--ink); }
+
+  .stop-name:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+
+  .stop-note { margin: 0; color: var(--lichen); font-size: 15px; max-width: 34em; }
+
+  .wx {
+    display: inline-block;
+    margin-left: 11px;
+    font-size: 13.5px;
+    font-variant-numeric: tabular-nums;
+    color: var(--lichen);
+  }
+
+  .wx.wet { color: var(--red); font-weight: 600; }
+
+  .wx.pending { opacity: 0.45; }
+
+  .weather {
+    margin: 30px 0 0;
+    border-top: 1px solid var(--hair);
+  }
+
+  .weather h3 {
+    font-size: 15px;
+    font-weight: 700;
+    margin: 16px 0 3px;
+  }
+
+  .weather .src {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 13.5px;
+    color: var(--lichen);
+    margin: 0 0 12px;
+    max-width: 34em;
+  }
+
+  table.wxtab {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14.5px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  table.wxtab th {
+    text-align: left;
+    font-weight: 600;
+    color: var(--lichen);
+    font-size: 13.5px;
+    padding: 0 10px 6px 0;
+    border-bottom: 1px solid var(--hair);
+  }
+
+  table.wxtab td {
+    padding: 9px 10px 9px 0;
+    border-bottom: 1px solid var(--hair);
+    vertical-align: top;
+  }
+
+  table.wxtab td:first-child { font-weight: 700; }
+
+  table.wxtab .rain { color: var(--red); font-weight: 600; }
+
+  table.wxtab td.dry { color: var(--lichen); font-weight: 400; }
+
+  table.wxtab tr.night td { background: rgba(31, 92, 139, 0.05); }
+
+  table.wxtab td.when { font-weight: 700; white-space: nowrap; }
+
+  table.wxtab td.when small { display: block; font-weight: 400; color: var(--lichen); font-size: 12.5px; }
+
+  .mgram { margin: 22px 0 0; }
+
+  .mgram a { display: block; border: 1px solid var(--hair); background: #fff; }
+
+  .mgram img { width: 100%; height: auto; display: block; }
+
+  .mgram p {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 13.5px;
+    color: var(--lichen);
+    margin: 7px 0 20px;
+  }
+
+  .flag {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 15px;
+    color: var(--ink);
+    border-left: 3px solid var(--red);
+    padding: 2px 0 2px 12px;
+    margin: 10px 0 0;
+    max-width: 32em;
+  }
+
+  /* ---- trek variants ---- */
+  .variants { margin: 26px 0 0; padding: 0; list-style: none; }
+
+  .variants li {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 4px 14px;
+    padding: 11px 0;
+    border-top: 1px solid var(--hair);
+    align-items: baseline;
+  }
+
+  .variants li:last-child { border-bottom: 1px solid var(--hair); }
+
+  .variants b { font-weight: 700; }
+
+  .variants .num {
+    font-variant-numeric: tabular-nums;
+    font-size: 14.5px;
+    color: var(--lichen);
+    white-space: nowrap;
+  }
+
+  .variants small { grid-column: 1 / -1; color: var(--lichen); font-size: 14.5px; }
+
+  /* ---- checklist ---- */
+  .check { list-style: none; padding: 0; margin: 18px 0 0; }
+
+  .check li {
+    padding: 10px 0 10px 28px;
+    border-top: 1px solid var(--hair);
+    position: relative;
+    max-width: 36em;
+  }
+
+  .check li:last-child { border-bottom: 1px solid var(--hair); }
+
+  .check li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 15px;
+    width: 13px;
+    height: 13px;
+    border: 1.5px solid var(--lichen);
+  }
+
+  footer {
+    margin-top: 54px;
+    padding-top: 16px;
+    border-top: 1px solid var(--hair);
+    font-family: var(--serif);
+    font-size: 14px;
+    color: var(--lichen);
+  }
+
+  .leaflet-container { font-family: var(--sans); }
+
+  .leaflet-popup-content { margin: 12px 14px; font-size: 14.5px; line-height: 1.45; }
+
+  .leaflet-popup-content strong { display: block; font-size: 15.5px; margin-bottom: 3px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+
+<div class="blaze"></div>
+
+<div class="wrap">
+
+  <header>
+    <h1>Чоха<br>и Изеры</h1>
+    <p class="dates">4–6 сентября. Варшава — поездом до Вроцлава, дальше на машине: замок, плотины на Квисе, суббота целиком в горах, воскресенье в купальне.</p>
+  </header>
+
+  <figure>
+    <svg viewBox="0 0 700 215" role="img" aria-label="Схема субботнего трека: подъём на Стуг Изерски 1105 метров, спуск к Хате Гужистув, возврат через Поляну Изерску">
+      <line x1="40" y1="188" x2="660" y2="188" stroke="#c9cdc7" stroke-width="1"/>
+      <path d="M40,160 L70,150 L100,120 L128,78 L152,45 L182,45 L215,62 L250,86 L290,96 L340,110 L380,100 L418,104 L455,92 L500,80 L542,78 L575,96 L610,128 L638,150 L660,160"
+            fill="none" stroke="#22282a" stroke-width="2.5" stroke-linejoin="round"/>
+      <circle cx="40" cy="160" r="4.5" fill="#5c6764"/>
+      <circle cx="167" cy="45" r="5.5" fill="#3e7d4b"/>
+      <circle cx="418" cy="104" r="5.5" fill="#3e7d4b"/>
+      <circle cx="542" cy="78" r="5.5" fill="#3e7d4b"/>
+      <circle cx="660" cy="160" r="4.5" fill="#5c6764"/>
+      <text x="40" y="205" font-size="13" font-weight="600" fill="#5c6764">8:00</text>
+      <text x="167" y="30" font-size="13.5" font-weight="700" fill="#22282a" text-anchor="middle">Стуг Изерски 1105</text>
+      <text x="418" y="126" font-size="13.5" font-weight="700" fill="#22282a" text-anchor="middle">Хата Гужистув</text>
+      <text x="542" y="63" font-size="13.5" font-weight="700" fill="#22282a" text-anchor="middle">Поляна Изерска</text>
+      <text x="660" y="205" font-size="13" font-weight="600" fill="#5c6764" text-anchor="end">~15:00</text>
+    </svg>
+    <figcaption>Форма субботнего дня: 17 км по прямому варианту, 21–23 км если держаться размеченных шлаков. Набор 700–790 м. Схема, не GPS-профиль.</figcaption>
+  </figure>
+
+  <div class="weather">
+    <h3>Прогноз</h3>
+    <p class="src">Осадки по частям суток, не суммой за день. В миллиметрах, если модель их даёт; иначе вероятность. Обновляется при загрузке страницы.</p>
+    <table class="wxtab">
+      <thead><tr><th>Когда</th><th>Чоха</th><th>Изеры, 843 м</th><th>Вроцлав</th></tr></thead>
+      <tbody id="wxdays"><tr class="night"><td class="when">Пятница<small>ночь, 0–6</small></td><td class="dry">15%</td><td class="dry">23%</td><td class="dry">13%</td></tr><tr><td class="when"><small style="font-weight:600">утро, 6–12</small></td><td class="dry">18%</td><td class="dry">15%</td><td class="rain">0,2 мм</td></tr><tr><td class="when"><small style="font-weight:600">день, 12–18</small></td><td class="dry">8%</td><td class="dry">10%</td><td class="dry">10%</td></tr><tr><td class="when"><small style="font-weight:600">вечер, 18–24</small></td><td class="rain">23,3 мм</td><td class="rain">9,4 мм</td><td class="rain">13,0 мм</td></tr><tr class="night"><td class="when">Суббота<small>ночь, 0–6</small></td><td class="rain">2,5 мм</td><td class="rain">9,8 мм</td><td class="rain">3,3 мм</td></tr><tr><td class="when"><small style="font-weight:600">утро, 6–12</small></td><td class="dry">23%</td><td class="dry">23%</td><td class="dry">13%</td></tr><tr><td class="when"><small style="font-weight:600">день, 12–18</small></td><td class="dry">5%</td><td class="dry">13%</td><td class="dry">3%</td></tr><tr><td class="when"><small style="font-weight:600">вечер, 18–24</small></td><td class="dry">5%</td><td class="dry">28%</td><td class="dry">5%</td></tr><tr class="night"><td class="when">Воскресенье<small>ночь, 0–6</small></td><td class="dry">5%</td><td class="dry">31%</td><td class="dry">2%</td></tr><tr><td class="when"><small style="font-weight:600">утро, 6–12</small></td><td class="dry">3%</td><td class="dry">14%</td><td class="dry">0%</td></tr><tr><td class="when"><small style="font-weight:600">день, 12–18</small></td><td class="dry">1%</td><td class="dry">1%</td><td class="dry">0%</td></tr><tr><td class="when"><small style="font-weight:600">вечер, 18–24</small></td><td class="dry">0%</td><td class="dry">0%</td><td class="dry">0%</td></tr></tbody>
+    </table>
+    <p class="src" id="wxstale" style="color:#b23a2e"></p>
+    <p class="src" id="wxwind">Суббота на Гале Изерской: 9,8°…16,5°, порывы до 75 км/ч. На открытом плато ветер решает больше, чем дождь.</p>
+
+    <h3>Сейчас на станциях IMGW</h3>
+    <p class="src">Живые наблюдения. Снежка стоит на 1602 м и показывает, что творится на хребте, пока в долине лето.</p>
+    <table class="wxtab">
+      <tbody id="wxnow"><tr><td>Вроцлав, 128 м</td><td>23°</td><td>ветер 4 м/с</td><td>осадки 0,2 мм<br><span style="color:#5c6764;font-weight:400">14:00, 2026-09-03</span></td></tr><tr><td>Еленя-Гура, 342 м</td><td>20,5°</td><td>ветер 4 м/с</td><td>осадки 0,9 мм<br><span style="color:#5c6764;font-weight:400">14:00, 2026-09-03</span></td></tr><tr><td>Снежка, 1602 м</td><td>9°</td><td>ветер 8 м/с</td><td>осадки 4,5 мм<br><span style="color:#5c6764;font-weight:400">14:00, 2026-09-03</span></td></tr></tbody>
+    </table>
+
+    <h3>Метеорограммы ICM, meteo.pl</h3>
+    <p class="src">Модель UM Варшавского университета, шаг сетки 4 км — она лучше остальных отрабатывает горы. Панель «opad» показывает осадки по часам. Картинки тянутся с meteo.pl напрямую и подхватывают свежий прогон при каждой загрузке.</p>
+    <div class="mgram">
+      <a data-mg="444" href="https://www.meteo.pl/um/metco/mgram_pict.php?ntype=0u&amp;row=444&amp;col=150&amp;lang=pl" target="_blank" rel="noopener">
+        <img alt="Метеорограмма ICM для Изер" loading="lazy">
+      </a>
+      <p>Изеры: высота ячейки 320–636–925 м, то есть это и Сверадув, и Гала Изерска.</p>
+      <a data-mg="437" href="https://www.meteo.pl/um/metco/mgram_pict.php?ntype=0u&amp;row=437&amp;col=150&amp;lang=pl" target="_blank" rel="noopener">
+        <img alt="Метеорограмма ICM для района Чохи" loading="lazy">
+      </a>
+      <p>Чоха и долина Квисы. Тапни, чтобы открыть в полный размер.</p>
+    </div>
+  </div>
+
+  <div class="map-head">
+    <button type="button" data-day="all" aria-pressed="true">Весь маршрут</button>
+    <button type="button" data-day="fri" aria-pressed="false">Пятница</button>
+    <button type="button" data-day="sat" aria-pressed="false">Суббота</button>
+    <button type="button" data-day="sun" aria-pressed="false">Воскресенье</button>
+  </div>
+
+  <div id="map"></div>
+
+  <p class="legend">
+    <span style="color:#b23a2e">замок</span>
+    <span style="color:#1f5c8b">вода</span>
+    <span style="color:#3e7d4b">трек</span>
+    <span style="color:#b08a1c">виды и опции</span>
+    <span style="color:#5c6764">база, еда, город</span>
+  </p>
+
+  <p class="legend" style="margin-top:6px">
+    <span class="ln" style="color:#5c6764">переезды на машине</span>
+    <span class="ln" style="color:#3e7d4b">субботний трек</span>
+    <span class="ln" style="color:#b23a2e">пешком по Вроцлаву</span>
+  </p>
+
+  <section>
+    <p class="day-no">Пятница, 4 сентября</p>
+    <h2>Доехать и взять замок</h2>
+    <p class="day-sub">Поезд привозит в 11:19. Всё городское делается пешком в одном квартале на Свободной, машина берётся последней — чтобы прокат не тикал, пока вы ищете парковку. У Чохи вы к 15:25.</p>
+
+    <ol class="stops">
+      <li style="--dot:var(--slate)">
+        <span class="time">7:44</span>
+        <button class="stop-name" data-go="0">EIC 1600 «Panorama»</button>
+        <p class="stop-note">Восходни 7:33, Центральный 7:44, Заходни 7:49. Дальше Ченстохова, Люблинец, Ополе. Во Вроцлаве в 11:19.</p>
+      </li>
+      <li style="--dot:var(--slate)">
+        <span class="time">11:20 – 11:33</span>
+        <button class="stop-name" data-go="16">Пешком на Свободную</button>
+        <p class="stop-note">900 м от вокзала, 12 минут. После четырёх часов в поезде это скорее плюс.</p>
+      </li>
+      <li style="--dot:var(--slate)">
+        <span class="time">11:35 – 12:00</span><span class="wx" data-wx="16">23,7° · пасмурно · 3%</span>
+        <button class="stop-name" data-go="16">Zdrofit Swobodna Spot</button>
+        <p class="stop-note">Swobodna 60. В пятницу до 23:00.</p>
+        <p class="flag">Не путай с «Zdrofit Zdrowe Miejsce» в Sky Tower: там прямо в отзывах пишут, что это не Zdrofit и по клубной карте не пускают.</p>
+      </li>
+      <li style="--dot:var(--slate)">
+        <span class="time">12:00 – 12:30</span><span class="wx" data-wx="15">23,7° · пасмурно · 3%</span>
+        <button class="stop-name" data-go="15">Обед на Свободной 37</button>
+        <p class="stop-note">Пасаж Зелиньского, через дорогу от зала. Bistro w garniturze — большие порции и дёшево, до 18:00. Рядом Pinio с варениками и пиццей. SzaszłyczOk хорош, но открывается только в 12:00.</p>
+      </li>
+      <li style="--dot:var(--slate)">
+        <span class="time">12:45 – 13:05</span>
+        <button class="stop-name" data-go="0">Забрать машину</button>
+        <p class="stop-note">Обратно к вокзалу и только теперь прокат. До Чохи 172 км, 2 ч 15 мин по A4 и A18.</p>
+      </li>
+      <li style="--dot:var(--red)">
+        <span class="time">15:40 – 17:25</span><span class="wx" data-wx="1">25,0° · пасмурно · 0%</span>
+        <button class="stop-name" data-go="1">Замок Чоха</button>
+        <p class="stop-note">Билет 22 zł, расширенный с пыточной 36 zł, парковка 8 zł. Только с гидом, по-польски, открыт до 19:15.</p>
+        <p class="flag">Замок теперь идёт первым: экскурсии только групповые, и приехать к последнему сеансу — риск остаться без него. Плотина никуда не денется и работает круглосуточно.</p>
+      </li>
+      <li style="--dot:var(--blue)">
+        <span class="time">17:30 – 18:45</span><span class="wx" data-wx="2">25,3° · пасмурно · 8%</span>
+        <button class="stop-name" data-go="2">Плотина Лесняньска</button>
+        <p class="stop-note">Плотина и ГЭС 1901–1905 годов, от замка пешком вниз. Выход вдоль Квисы 4–5 км.</p>
+      </li>
+      <li style="--dot:var(--slate)">
+        <span class="time">19:00 – 19:35</span><span class="wx" data-wx="3">22,5° · облачно с прояснениями · 33%</span>
+        <button class="stop-name" data-go="3">Сверадув-Здруй</button>
+        <p class="stop-note">22 км, полчаса. База на две ночи.</p>
+        <p class="flag">Дождь начинается в 20:00, гроза с градом и 15 мм за час — в 22:00. Заселяетесь ровно перед началом, ехать в непогоду не придётся.</p>
+      </li>
+    </ol>
+  </section>
+
+  <section>
+    <p class="day-no">Суббота, 5 сентября</p>
+    <h2>Горы, весь день</h2>
+    <p class="day-sub">Старт в 8:00 от Дома Здроевого — там начинается Главный Судетский шлак. Парковки в городе бесплатные, что для Польши редкость.</p>
+
+    <ol class="stops">
+      <li style="--dot:var(--green)">
+        <span class="time">~10:00</span><span class="wx" data-wx="4">10,5° · облачно с прояснениями · 5%</span>
+        <button class="stop-name" data-go="4">Стуг Изерски, 1105 м</button>
+        <p class="stop-note">Подъём красным шлаком, 4,8 км и +570 м. Приют 1924 года в силезско-лужицком стиле, карты принимают.</p>
+      </li>
+      <li style="--dot:var(--gold)">
+        <span class="time">опция</span><span class="wx" data-wx="5">10,9° · облачно с прояснениями · 5%</span>
+        <button class="stop-name" data-go="5">Смрк, 1124 м</button>
+        <p class="stop-note">Плюс полтора часа в одну сторону, чешская сторона. Высшая точка Изер, башня со стеклянным полом, вход бесплатный.</p>
+      </li>
+      <li style="--dot:var(--green)">
+        <span class="time">~13:00</span><span class="wx" data-wx="7">14,6° · пасмурно · 11%</span>
+        <button class="stop-name" data-go="7">Хата Гужистув</button>
+        <p class="stop-note">Дальняя точка и обед. Черничные блины — то, за чем сюда идут. Электричества нет вообще.</p>
+        <p class="flag">Только наличные. Карты не принимают, связи для BLIK нет. Гала Изерска — морозная котловина: при +15 в Сверадуве наверху может быть около нуля.</p>
+      </li>
+      <li style="--dot:var(--green)">
+        <span class="time">~14:00</span><span class="wx" data-wx="6">14,1° · облачно с прояснениями · 13%</span>
+        <button class="stop-name" data-go="6">Поляна Изерска</button>
+        <p class="stop-note">Развилка красного, жёлтого и синего. Дальше синим на север, спуск 4 км, местами крутой.</p>
+      </li>
+      <li style="--dot:var(--gold)">
+        <span class="time">если остались силы</span><span class="wx" data-wx="9">16,5° · облачно с прояснениями · 8%</span>
+        <button class="stop-name" data-go="9">Sky Walk</button>
+        <p class="stop-note">Работает до 19:00. Парковки у башни нет, машину бросать внизу и идти в гору.</p>
+      </li>
+    </ol>
+
+    <ul class="variants">
+      <li>
+        <b>Полная петля</b>
+        <span class="num">17–23 км · +700–790 м · 6–7 ч</span>
+        <small>Стуг Изерски, жёлтым на Халу, обратно синим через Поляну. Линия на карте — 17 км: роутер соединяет точки короткими тропами. По размеченным шлакам выходит 21–23 км.</small>
+      </li>
+      <li>
+        <b>Без Халы</b>
+        <span class="num">15,8 км · ~5 ч</span>
+        <small>Стуг Изерски и Поляна Изерска. Теряется Хата Гужистув, то есть и обед.</small>
+      </li>
+      <li>
+        <b>Если задует или развезёт</b>
+        <span class="num">6–8 км · 3 ч</span>
+        <small>Гондолой на Стуг Изерски, оттуда красным до Лончника и вниз через Поляну Изерску — всё время в лесу, без выхода на открытый хребет. Хату и Смрк отдаёшь, зато не идёшь 8 км по продуваемому плато. Освободившийся день закрывают термы в Сверадуве и руины замка Свеце.</small>
+      </li>
+      <li>
+        <b>Гондолой наверх</b>
+        <span class="num">~7 км вниз · 2–3 ч</span>
+        <small>Ski &amp; Sun работает до 18:00, около 40 € на двоих. Срезает весь набор — вариант, если в группе разный темп.</small>
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <p class="day-no">Воскресенье, 6 сентября</p>
+    <h2>Купальня и домой</h2>
+    <p class="day-sub">Выезд в 10:00 ложится на выселение. Обратный перегон длиннее, чем кажется: 151 км, но два с половиной часа горными дорогами. Заправиться в Сверадуве или Мирске — заправка во Вроцлаве съест ровно тот запас, которого потом не хватит.</p>
+
+    <ol class="stops">
+      <li style="--dot:var(--slate)">
+        <span class="time">12:50</span>
+        <button class="stop-name" data-go="0">Сдать машину</button>
+        <p class="stop-note">151 км, но 2,5 часа: обратная дорога идёт горными дорогами, не по A4.</p>
+      </li>
+      <li style="--dot:var(--slate)">
+        <span class="time">13:00 – 13:25</span><span class="wx" data-wx="11">18,4° · почти ясно · 0%</span>
+        <button class="stop-name" data-go="11">Bar Mleczny Różowa Krowa</button>
+        <p class="stop-note">Świdnicka 36, 200 м от купальни. В воскресенье 9:00–20:00, меню на тачскрине с английским.</p>
+        <p class="flag">Почти все приличные бары млечные во Вроцлаве по воскресеньям закрыты — и Miś, и Mikrus, и Smak. Бери суп и вареники: полный zestaw schabowy за полчаса до сауны себя не оправдает.</p>
+      </li>
+      <li style="--dot:var(--slate)">
+        <span class="time">13:30 – 15:30</span><span class="wx" data-wx="12">19,3° · облачно с прояснениями · 0%</span>
+        <button class="stop-name" data-go="12">Купальня на Театральной</button>
+        <p class="stop-note">Билет на два часа, максимум 2,5. Историческая городская баня: бассейны, сауны, паровые.</p>
+        <p class="flag">У бассейна и сауны раздельные раздевалки, между ними надо вытираться и переодеваться заново. На двух часах это ощутимо: решите заранее, идёте в воду или в парную. Полотенце и сланцы свои.</p>
+      </li>
+      <li style="--dot:var(--slate)">
+        <span class="time">15:45 – 16:00</span><span class="wx" data-wx="13">19,8° · почти ясно · 0%</span>
+        <button class="stop-name" data-go="13">Figa w Barbarze</button>
+        <p class="stop-note">Świdnicka 8B, по пути к Рынку. Фильтр и выпечка, до 18:00.</p>
+      </li>
+      <li style="--dot:var(--slate)">
+        <span class="time">16:00 – 17:30</span><span class="wx" data-wx="14">19,6° · почти ясно · 0%</span>
+        <button class="stop-name" data-go="14">Рынок</button>
+        <p class="stop-note">Полтора часа с запасом: поезд в 18:20, на вокзале достаточно быть к 17:50. Если утренний перегон затянется, режется прогулка, а не купальня.</p>
+      </li>
+      <li style="--dot:var(--slate)">
+        <span class="time">18:20</span>
+        <button class="stop-name" data-go="0">EIC 6110 «Viadrina»</button>
+        <p class="stop-note">Через Лешно и Познань. Заходни 21:55, Центральный 22:04, Восходни 22:15.</p>
+      </li>
+    </ol>
+  </section>
+
+  <section>
+    <p class="day-no">Перед выездом</p>
+    <h2>Забронировать и взять с собой</h2>
+    <ul class="check">
+      <li>Поезда в обе стороны — пятничное утро и воскресный вечер разбирают первыми</li>
+      <li>Машина во Вроцлаве. Каршеринг годится: маршрут целиком внутри Польши, а Вроцлав в зоне — аренду можно завершить прямо у купальни. Но две ночи вне зоны стоит сравнить с обычным прокатом</li>
+      <li>Две ночи в Сверадуве-Здруе</li>
+      <li>Наличные злотые — Хата Гужистув и вход в руины Свеце</li>
+      <li>Слои и ветровка на субботу, полотенце и сланцы на воскресенье</li>
+      <li>Билеты в Чоху берутся на месте, бронировать не нужно</li>
+    </ul>
+    <p class="flag" style="border-color:var(--slate)">Если купальня отменяется, воскресное утро закрывают руины замка Свеце в 30 км от Сверадува: частные, владелец водит сам, открыто с 10:00. Но тогда выезжать в 9:00.</p>
+  </section>
+
+  <div class="grab">
+    <p>Файл с теми же точками для Organic Maps, Maps.me или Google Earth. В горах интернета не будет, а карта нужна — загрузи заранее.</p>
+    <a id="kml" download="czocha-izery-4-6.09.kml" href="#">Скачать KML, 15 точек</a>
+  </div>
+
+  <footer>
+    Карта — OpenStreetMap, автомобильные участки посчитаны OSRM, пеший трек — BRouter. Наблюдения — IMGW. Почасовой прогноз — Open-Meteo. Метеорограммы — ICM meteo.pl. У IMGW нет открытого API прогноза по координатам, у ICM он есть, но под токеном — метеорограммы отдаются без него.
+  </footer>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+(function () {
+var R = {
+  driveIn: [[51.09859,17.03808],[51.098,17.04333],[51.09577,17.04035],[51.09463,17.03084],[51.08395,17.02485],[51.07354,17.01514],[51.07228,17.01169],[51.0657,17.00691],[51.05893,16.98798],[51.0505,16.97356],[51.04985,16.95582],[51.03909,16.90533],[51.03504,16.85972],[51.03475,16.8072],[51.03219,16.79725],[51.02455,16.78251],[51.02245,16.77256],[51.01977,16.74006],[51.0199,16.69079],[51.06258,16.51129],[51.06731,16.47646],[51.08335,16.42489],[51.09219,16.4106],[51.10283,16.40317],[51.10975,16.39552],[51.12292,16.36913],[51.12668,16.35644],[51.13027,16.30926],[51.14786,16.26226],[51.15973,16.192],[51.16224,16.13013],[51.1765,16.05332],[51.19682,16.0168],[51.20323,16.00044],[51.21685,15.98448],[51.22393,15.96934],[51.23119,15.92133],[51.24639,15.87564],[51.25648,15.83732],[51.27381,15.79494],[51.29363,15.7593],[51.30945,15.68443],[51.32723,15.65007],[51.32864,15.64177],[51.32282,15.61188],[51.31323,15.58146],[51.31022,15.53655],[51.30285,15.51261],[51.28683,15.48126],[51.26914,15.43182],[51.26822,15.42191],[51.27079,15.39531],[51.26876,15.37998],[51.26308,15.36626],[51.23941,15.33374],[51.23308,15.32092],[51.21893,15.27255],[51.21698,15.25541],[51.21786,15.24211],[51.21084,15.23923],[51.20723,15.24767],[51.19489,15.24484],[51.19152,15.24597],[51.18761,15.25105],[51.18324,15.25271],[51.17907,15.26176],[51.16984,15.26249],[51.16325,15.26782],[51.15448,15.26595],[51.14733,15.27267],[51.13638,15.27288],[51.1315,15.2758],[51.12347,15.29205],[51.12013,15.28652],[51.11742,15.28949],[51.1083,15.28959],[51.10442,15.29412],[51.0997,15.29414],[51.09334,15.29869],[51.0804,15.29493],[51.07612,15.29538],[51.06873,15.29103],[51.0658,15.29115],[51.06451,15.28719],[51.04964,15.27818],[51.04478,15.26951],[51.04336,15.26275],[51.03866,15.26521],[51.03186,15.26291],[51.02413,15.26399],[51.02272,15.26582],[51.02624,15.27349],[51.02597,15.29052],[51.02979,15.3027]],
+  driveBase: [[51.03081,15.29094],[51.03217,15.29219],[51.03188,15.29393],[51.02692,15.29618],[51.02624,15.27349],[51.02355,15.26949],[51.02116,15.27457],[51.01707,15.27457],[51.012,15.27861],[51.00547,15.2779],[51.00121,15.28284],[50.99676,15.28417],[50.99126,15.29043],[50.98828,15.28993],[50.98563,15.28653],[50.98085,15.28896],[50.97393,15.2897],[50.97158,15.2917],[50.9716,15.29375],[50.9534,15.30679],[50.95248,15.3095],[50.94544,15.30767],[50.94191,15.30107],[50.9376,15.29617],[50.92713,15.30811],[50.92425,15.30536],[50.92099,15.30923],[50.91666,15.30794],[50.91506,15.31018],[50.9127,15.31078],[50.91043,15.31724],[50.91063,15.32065],[50.91278,15.32222],[50.91094,15.32491],[50.91079,15.32829],[50.91312,15.33986],[50.91106,15.34027],[50.90798,15.34377],[50.90548,15.33536],[50.90619,15.33412]],
+  trek: [[50.9062,15.33411],[50.90637,15.33329],[50.90539,15.33165],[50.90568,15.33117],[50.90412,15.33066],[50.90415,15.32911],[50.90541,15.32613],[50.9041,15.32484],[50.90317,15.3252],[50.90169,15.32391],[50.90081,15.32438],[50.90007,15.32422],[50.89985,15.32366],[50.89923,15.32354],[50.89902,15.32208],[50.89716,15.32102],[50.89402,15.31627],[50.89213,15.31124],[50.89202,15.31015],[50.89147,15.31037],[50.89127,15.31014],[50.89239,15.30888],[50.89221,15.30937],[50.89085,15.31001],[50.8883,15.3099],[50.88627,15.31494],[50.8833,15.31563],[50.88237,15.31729],[50.88158,15.32042],[50.88086,15.32052],[50.88108,15.32541],[50.8782,15.33645],[50.87766,15.3399],[50.87765,15.34362],[50.87647,15.34406],[50.87518,15.34527],[50.87392,15.34537],[50.87255,15.34825],[50.8718,15.35203],[50.86939,15.35453],[50.86781,15.35493],[50.86636,15.35591],[50.86429,15.3543],[50.86328,15.35539],[50.86134,15.35617],[50.86033,15.35715],[50.85909,15.35684],[50.85455,15.35823],[50.85461,15.3607],[50.85455,15.35823],[50.85909,15.35684],[50.86033,15.35715],[50.86134,15.35617],[50.86328,15.35539],[50.86429,15.3543],[50.86636,15.35591],[50.86781,15.35493],[50.86939,15.35453],[50.87045,15.35369],[50.8718,15.35203],[50.87255,15.34825],[50.87356,15.34592],[50.87409,15.34517],[50.87518,15.34527],[50.87647,15.34406],[50.87765,15.34362],[50.87759,15.34246],[50.87765,15.34362],[50.87806,15.34347],[50.88031,15.34418],[50.88497,15.3444],[50.88813,15.34295],[50.88922,15.34217],[50.89147,15.33944],[50.89355,15.33885],[50.89594,15.33696],[50.89718,15.33692],[50.89953,15.3376],[50.8999,15.33605],[50.89942,15.33398],[50.90002,15.33431],[50.90221,15.33369],[50.90489,15.33404],[50.90574,15.33373],[50.90619,15.33412]],
+  driveOut: [[50.90619,15.33412],[50.90681,15.33177],[50.90936,15.33766],[50.91105,15.33517],[50.91345,15.3409],[50.91827,15.34253],[50.92845,15.35399],[50.94141,15.35734],[50.95123,15.36462],[50.96631,15.38344],[50.9758,15.39154],[50.98815,15.41989],[50.99272,15.42367],[50.99559,15.43264],[51.0042,15.44305],[51.0087,15.44607],[51.01844,15.43261],[51.0322,15.42061],[51.03381,15.42829],[51.03626,15.42699],[51.04248,15.44201],[51.04759,15.45079],[51.05273,15.45371],[51.06043,15.46914],[51.06838,15.47276],[51.08121,15.46875],[51.08416,15.4727],[51.08972,15.47405],[51.09652,15.48528],[51.09586,15.49487],[51.10063,15.52861],[51.10029,15.54619],[51.10403,15.55499],[51.10936,15.58155],[51.10979,15.59824],[51.1138,15.60805],[51.11799,15.61284],[51.12032,15.62271],[51.11962,15.63802],[51.11624,15.65007],[51.11888,15.71603],[51.12316,15.72508],[51.11834,15.75363],[51.12116,15.82765],[51.11409,15.88662],[51.11691,15.89],[51.12123,15.88725],[51.12268,15.89755],[51.12667,15.90044],[51.12828,15.91101],[51.12619,15.9236],[51.13155,15.93131],[51.13472,15.95129],[51.15387,15.99791],[51.16654,16.03764],[51.17144,16.0444],[51.1741,16.05418],[51.17583,16.05476],[51.16213,16.1301],[51.15963,16.19195],[51.14776,16.2622],[51.13016,16.30921],[51.12657,16.35635],[51.12326,16.36805],[51.10967,16.3954],[51.10278,16.40301],[51.09215,16.41044],[51.08326,16.4248],[51.06721,16.47639],[51.06249,16.5112],[51.01941,16.69403],[51.01967,16.74038],[51.02246,16.7737],[51.03468,16.80757],[51.03501,16.8616],[51.03918,16.90743],[51.05018,16.95925],[51.04979,16.97047],[51.04715,16.97629],[51.04907,16.97227],[51.05884,16.98796],[51.06566,17.00701],[51.07203,17.01151],[51.07341,17.01529],[51.08419,17.02537],[51.09444,17.03102],[51.09497,17.03287],[51.09921,17.0336],[51.09859,17.03808]],
+  cityWalk: [[51.10526,17.03136],[51.10563,17.03151],[51.10547,17.0328],[51.10549,17.03327],[51.10559,17.0333],[51.10542,17.03443],[51.10553,17.03341],[51.10562,17.03328],[51.10624,17.03355],[51.10697,17.03359],[51.10699,17.03326],[51.10747,17.03328],[51.10762,17.03238],[51.10899,17.03298],[51.10903,17.03284],[51.10912,17.03286],[51.10939,17.0315],[51.10967,17.03165],[51.10964,17.03174],[51.10967,17.03165],[51.10939,17.0315],[51.10803,17.03716],[51.1081,17.03822],[51.10751,17.03814],[51.10734,17.03834],[51.10704,17.03837],[51.10522,17.03765],[51.10504,17.03744],[51.10416,17.03722],[51.10395,17.03702],[51.10296,17.03678],[51.10226,17.03648],[51.10217,17.03631],[51.10184,17.03634],[51.10081,17.03591],[51.10073,17.03602],[51.10062,17.03599],[51.10055,17.03622],[51.1,17.036],[51.09995,17.03612],[51.09956,17.03597],[51.0993,17.03643],[51.09919,17.03639],[51.09916,17.03665],[51.09811,17.03633],[51.09801,17.03707]]
+};
+
+  var C = { red: '#b23a2e', blue: '#1f5c8b', green: '#3e7d4b', gold: '#b08a1c', slate: '#5c6764' };
+
+  var stops = [
+    { d: 'fri', c: C.slate, ll: [51.09808, 17.03709], n: 'Wrocław Główny', t: 'Пт 12:00 — забрать машину. Вс 12:15 — сдать, потом купальня и поезд 17:30.' },
+    { d: 'fri', c: C.red,   ll: [51.02981, 15.30261], n: 'Замок Чоха', t: 'Пт 15:00–17:00. 22 zł, расширенный 36 zł, парковка 8 zł. Открыт до 19:15, только с гидом.' },
+    { d: 'fri', c: C.blue,  ll: [51.03069, 15.29103], n: 'Плотина Лесняньска', t: 'Пт 17:00–18:30. 1901–1905 гг. Выход вдоль Квисы 4–5 км.' },
+    { d: 'fri', c: C.slate, ll: [50.90623, 15.33419], n: 'Сверадув-Здруй, Дом Здроевый', t: 'База на две ночи. Сб старт трека в 8:00, вс выезд в 10:00.' },
+    { d: 'sat', c: C.green, ll: [50.89233, 15.30877], n: 'Стуг Изерски, 1105 м', t: 'Сб ~10:00. Подъём 4,8 км, +570 м. Приют 1924 года, карты принимают.' },
+    { d: 'sat', c: C.gold,  ll: [50.88935, 15.27184], n: 'Смрк, 1124 м', t: 'Опция, +1,5 ч в одну сторону. Чешская сторона, башня со стеклянным полом, бесплатно.' },
+    { d: 'sat', c: C.green, ll: [50.87699, 15.34243], n: 'Поляна Изерска', t: 'Развилка красного, жёлтого и синего. Отсюда синим вниз в Сверадув, 4 км.' },
+    { d: 'sat', c: C.green, ll: [50.85464, 15.36081], n: 'Хата Гужистув, Гала Изерска', t: 'Обед и дальняя точка. Только наличные, связи нет. Морозная котловина — может быть около нуля.' },
+    { d: 'sat', c: C.gold,  ll: [50.91012, 15.31960], n: 'Ski & Sun, гондола', t: 'Путь отступления: наверх подъёмником, вниз пешком. До 18:00, парковка тесная.' },
+    { d: 'sat', c: C.gold,  ll: [50.89985, 15.33703], n: 'Sky Walk', t: 'До 19:00. Парковки у башни нет, машину оставлять внизу.' },
+    { d: 'sun', c: C.slate, ll: [50.99710, 15.28478], n: 'Руины замка Свеце', t: 'Запасной вариант вместо купальни. С 10:00, наличные, владелец водит сам.' },
+    { d: 'sun', c: C.slate, ll: [51.10525, 17.03141], n: 'Bar Mleczny Różowa Krowa', t: 'Вс 12:30. Świdnicka 36, 200 м от купальни. Открыт 9:00–20:00, в отличие от остальных.' },
+    { d: 'sun', c: C.slate, ll: [51.10551, 17.03446], n: 'Купальня на Театральной', t: 'Вс 13:00–15:00. Билет на 2 часа, максимум 2,5. У бассейна и сауны разные раздевалки.' },
+    { d: 'sun', c: C.slate, ll: [51.10763, 17.03270], n: 'Figa w Barbarze', t: 'Вс 15:15. Świdnicka 8B, до 18:00. Кофе после парной.' },
+    { d: 'sun', c: C.slate, ll: [51.10970, 17.03180], n: 'Рынок', t: 'Вс 16:00–17:30. Буфер перед поездом, поезд в 18:20.' },
+    { d: 'fri', c: C.slate, ll: [51.10067, 17.02429], n: 'Обед на Свободной 37', t: 'Пт 12:00. Пасаж Зелиньского, через дорогу от Zdrofit. Bistro w garniturze до 18:00, рядом Pinio.' },
+    { d: 'fri', c: C.slate, ll: [51.09965, 17.02499], n: 'Zdrofit Swobodna Spot', t: 'Пт 12:10. Swobodna 60, 900 м от вокзала, уже в сторону трассы. До 23:00. Не Sky Tower — там по карте Zdrofit не пускают.' }
+  ];
+
+  var map = L.map('map', { scrollWheelZoom: false });
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+    attribution: '&copy; OpenStreetMap'
+  }).addTo(map);
+
+  var markers = stops.map(function (s) {
+    return L.circleMarker(s.ll, {
+      radius: 7, color: '#f3f4f1', weight: 2,
+      fillColor: s.c, fillOpacity: 1
+    }).bindPopup('<strong>' + s.n + '</strong>' + s.t).addTo(map);
+  });
+
+  var lines = {
+    fri: [L.polyline(R.driveIn, { color: C.slate, weight: 3, opacity: 0.75 }),
+          L.polyline(R.driveBase, { color: C.slate, weight: 3, opacity: 0.75 })],
+    sat: [L.polyline(R.trek, { color: C.green, weight: 4, opacity: 0.9 })],
+    sun: [L.polyline(R.driveOut, { color: C.slate, weight: 3, opacity: 0.75, dashArray: '7 6' }),
+          L.polyline(R.cityWalk, { color: C.red, weight: 4, opacity: 0.9 })]
+  };
+
+  Object.keys(lines).forEach(function (k) {
+    lines[k].forEach(function (l) { l.addTo(map); });
+  });
+
+  function show(day) {
+    Object.keys(lines).forEach(function (k) {
+      lines[k].forEach(function (l) {
+        if (day === 'all' || k === day) { l.addTo(map); }
+        else { map.removeLayer(l); }
+      });
+    });
+    markers.forEach(function (m, i) {
+      if (day === 'all' || stops[i].d === day) { m.addTo(map); }
+      else { map.removeLayer(m); }
+    });
+  }
+
+  function fit(day) {
+    var pts = stops.filter(function (s) { return day === 'all' || s.d === day; })
+                   .map(function (s) { return s.ll; });
+    map.fitBounds(L.latLngBounds(pts), { padding: [34, 34] });
+  }
+
+  fit('all');
+
+  var btns = Array.prototype.slice.call(document.querySelectorAll('.map-head button'));
+  btns.forEach(function (b) {
+    b.addEventListener('click', function () {
+      btns.forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
+      map.closePopup();
+      show(b.dataset.day);
+      fit(b.dataset.day);
+    });
+  });
+
+  var kmlText = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n<Document>\n  <name>Чоха + Изеры, 4–6.09</name>\n  <description>Вроцлав → Чоха → Сверадув-Здруй. Пятница: замок и плотина. Суббота: трек на Стуг Изерски и Халу Изерску. Воскресенье: возврат во Вроцлав.\n\nЦвета:\nкрасный — главные объекты\nсиний — вода и плотины\nфиолетовый — база / ночёвка\nзелёный — точки трека\nжёлтый — виды\nоранжевый — путь отступления\nрозовый — спа во Вроцлаве\nлаймовый — еда\nкоричневый — опция, если спа отменяется\nсерый — логистика</description>\n\n  <Style id=\"placemark-red\"><IconStyle><Icon><href>http://maps.me/placemarks/placemark-red.png</href></Icon></IconStyle></Style>\n  <Style id=\"placemark-blue\"><IconStyle><Icon><href>http://maps.me/placemarks/placemark-blue.png</href></Icon></IconStyle></Style>\n  <Style id=\"placemark-purple\"><IconStyle><Icon><href>http://maps.me/placemarks/placemark-purple.png</href></Icon></IconStyle></Style>\n  <Style id=\"placemark-green\"><IconStyle><Icon><href>http://maps.me/placemarks/placemark-green.png</href></Icon></IconStyle></Style>\n  <Style id=\"placemark-yellow\"><IconStyle><Icon><href>http://maps.me/placemarks/placemark-yellow.png</href></Icon></IconStyle></Style>\n  <Style id=\"placemark-orange\"><IconStyle><Icon><href>http://maps.me/placemarks/placemark-orange.png</href></Icon></IconStyle></Style>\n  <Style id=\"placemark-lime\"><IconStyle><Icon><href>http://maps.me/placemarks/placemark-lime.png</href></Icon></IconStyle></Style>\n  <Style id=\"placemark-pink\"><IconStyle><Icon><href>http://maps.me/placemarks/placemark-pink.png</href></Icon></IconStyle></Style>\n  <Style id=\"placemark-brown\"><IconStyle><Icon><href>http://maps.me/placemarks/placemark-brown.png</href></Icon></IconStyle></Style>\n  <Style id=\"placemark-gray\"><IconStyle><Icon><href>http://maps.me/placemarks/placemark-gray.png</href></Icon></IconStyle></Style>\n\n  <Placemark>\n    <name>Wrocław Główny — старт и финиш</name>\n    <description>ПТ ~12:00: приезд, забрать машину. ВС ~12:15: сдать машину, дальше спа и поезд около 17:30.\nДо Чохи ~150 км / 2 ч по A4 и дальше на Болеславец.</description>\n    <styleUrl>#placemark-gray</styleUrl>\n    <Point><coordinates>17.03709,51.09808,0</coordinates></Point>\n  </Placemark>\n\n  <Placemark>\n    <name>Zamek Czocha</name>\n    <description>ПТ 15:00–17:00. Открыт до 19:15, к этому времени автобусы уже уехали.\nБилет 22 zł, расширенный с пыточной и кабинетом курьёзов 36 zł. Парковка 8 zł.\nЭкскурсии только с гидом, по-польски.</description>\n    <styleUrl>#placemark-red</styleUrl>\n    <Point><coordinates>15.30261,51.02981,0</coordinates></Point>\n  </Placemark>\n\n  <Placemark>\n    <name>Zapora Leśniańska</name>\n    <description>ПТ 17:00–18:30. Плотина 1901–1905 гг. и ГЭС, от замка пешком вниз.\nКороткий выход вдоль Квисы 4–5 км. Полная петля вокруг озера 9 км / 2,5 ч — на пятницу уже не влезет.</description>\n    <styleUrl>#placemark-blue</styleUrl>\n    <Point><coordinates>15.29103,51.03069,0</coordinates></Point>\n  </Placemark>\n\n  <Placemark>\n    <name>Dom Zdrojowy — база и старт трека</name>\n    <description>Сверадув-Здруй, две ночи. От сюда начинается Главный Судетский шлак.\nСБ старт в 8:00. Парковки в городе бесплатные.\nВС выезд в 10:00 — как раз под выселение. Заправиться здесь или в Мирске, не оставлять на Вроцлав: до города 2 ч, а буфер до поезда небольшой.</description>\n    <styleUrl>#placemark-purple</styleUrl>\n    <Point><coordinates>15.33419,50.90623,0</coordinates></Point>\n  </Placemark>\n\n  <Placemark>\n    <name>Schronisko na Stogu Izerskim (1105 м)</name>\n    <description>СБ ~10:00. Подъём красным шлаком около 2 ч, +570 м.\nПриют 1924 года, силезско-лужицкий стиль. Еда простая, карты принимают, туалет 2 zł.\nДальше жёлтым на юг к Хате Гужистув.</description>\n    <styleUrl>#placemark-green</styleUrl>\n    <Point><coordinates>15.30877,50.89233,0</coordinates></Point>\n  </Placemark>\n\n  <Placemark>\n    <name>Smrk — смотровая башня (1124 м)</name>\n    <description>Опция +1,5 ч в одну сторону от Стуга, чешская сторона. Высшая точка Изер.\nВход на башню бесплатный, стеклянный пол и сетка. Берите, только если укладываетесь в график.</description>\n    <styleUrl>#placemark-yellow</styleUrl>\n    <Point><coordinates>15.27184,50.88935,0</coordinates></Point>\n  </Placemark>\n\n  <Placemark>\n    <name>Polana Izerska — развилка</name>\n    <description>Ключевой узел. Красный, жёлтый и синий шлаки.\nТуда: можно идти на Хату либо через жёлтый, либо срезать красным сюда и дальше синим.\nОбратно: отсюда синим на север, спуск в Сверадув ~4 км, местами крутой.</description>\n    <styleUrl>#placemark-green</styleUrl>\n    <Point><coordinates>15.34243,50.87699,0</coordinates></Point>\n  </Placemark>\n\n  <Placemark>\n    <name>Chatka Górzystów — Hala Izerska</name>\n    <description>СБ обед, дальняя точка трека. Черничные блины — то, за чем сюда идут.\nТОЛЬКО НАЛИЧНЫЕ, карты не принимают и связи для BLIK нет. Электричества нет вообще.\nМорозная котловина: утром может быть около нуля при +15 в городе. Слои и ветровка.\nОчередь к 13:00 длинная.</description>\n    <styleUrl>#placemark-green</styleUrl>\n    <Point><coordinates>15.36081,50.85464,0</coordinates></Point>\n  </Placemark>\n\n  <Placemark>\n    <name>Ski &amp; Sun — гондола, путь отступления</name>\n    <description>Если группа разного темпа: гондолой наверх, вниз пешком. Срезает все +570 м.\nРаботает сб–вс 9:00–18:00. Дорого: около 40 € на двоих туда-обратно.\nПарковка тесная, приезжать рано.</description>\n    <styleUrl>#placemark-orange</styleUrl>\n    <Point><coordinates>15.31960,50.91012,0</coordinates></Point>\n  </Placemark>\n\n  <Placemark>\n    <name>Sky Walk</name>\n    <description>Башня Зденека Франека. Работает до 19:00 — можно втиснуть в субботний вечер после трека, если останутся силы.\nПарковки у башни нет, машину бросать внизу и идти в гору.</description>\n    <styleUrl>#placemark-yellow</styleUrl>\n    <Point><coordinates>15.33703,50.89985,0</coordinates></Point>\n  </Placemark>\n\n  <Placemark>\n    <name>Ruiny Zamku Świecie</name>\n    <description>ЗАПАСНОЙ ВАРИАНТ. С учётом спа во Вроцлаве в воскресенье уже не влезает: открывается только в 10:00, а выезжать надо в 9:00.\nБерите, только если спа отменяется. Частные руины, владелец сам водит и рассказывает, вход символический, наличные.</description>\n    <styleUrl>#placemark-brown</styleUrl>\n    <Point><coordinates>15.28478,50.99710,0</coordinates></Point>\n  </Placemark>\n\n  <Placemark>\n    <name>Wrocławskie Centrum SPA — Teatralna</name>\n    <description>ВС ~13:00–15:00, финальная точка. От вокзала около 1 км пешком, 15 минут.\nВоскресенье с 8:30. Историческая городская купальня: бассейны, сауны, паровые, массажи.\n\nБилет на 2 часа, максимум 2,5. Больше не взять, так что закладывай ровно два и не растягивай.\n\nУ бассейна и сауны РАЗДЕЛЬНЫЕ раздевалки: между купанием и сауной придётся вытираться и переодеваться. При двухчасовом лимите это существенно — решите заранее, идёте вы в воду или в парную, метаться некогда.\nСауна в основном без купальников.\n\nПолотенце и сланцы с собой, иначе аренда на месте.</description>\n    <styleUrl>#placemark-pink</styleUrl>\n    <Point><coordinates>17.03446,51.10551,0</coordinates></Point>\n  </Placemark>\n\n  <Placemark>\n    <name>Rynek — чем занять освободившиеся 1,5 часа</name>\n    <description>ВС 15:15–16:45. От купальни 600 м пешком, от Рынка до вокзала ещё 1,5 км или пара остановок трамваем.\nОбед и кофе перед поездом. Буфер на случай, если утренний перегон затянется.</description>\n    <styleUrl>#placemark-gray</styleUrl>\n    <Point><coordinates>17.03180,51.10970,0</coordinates></Point>\n  </Placemark>\n\n  <Placemark>\n    <name>Bar Mleczny Różowa Krowa — перекус перед спа</name>\n    <description>ВС 12:30–12:55. Świdnicka 36, 200 м от купальни. В воскресенье работает с 9:00 до 20:00.\nЭто важно: почти все нормальные бары млечные во Вроцлаве в воскресенье ЗАКРЫТЫ — и Miś, и Mikrus, и Smak. Этот открыт.\nМеню на тачскрине с английским, готовят быстро, порции огромные, ценник копеечный.\n\nБери лёгкое — суп и вареники. Полный zestaw schabowy за полчаса до сауны — плохая идея.</description>\n    <styleUrl>#placemark-lime</styleUrl>\n    <Point><coordinates>17.03141,51.10525,0</coordinates></Point>\n  </Placemark>\n\n  <Placemark>\n    <name>Figa w Barbarze — кофе после спа</name>\n    <description>Świdnicka 8B, ровно по пути от купальни к Рынку. ВС 10:00–18:00.\nОбжарщики, фильтр и выпечка. Если после парной хочется просто сесть — это ближайшая хорошая точка.\nАльтернатива с более длинным графиком: Parrot Coffee, ks. Piotra Skargi 3, в воскресенье до 20:00.</description>\n    <styleUrl>#placemark-lime</styleUrl>\n    <Point><coordinates>17.03270,51.10763,0</coordinates></Point>\n  </Placemark>\n\n</Document>\n</kml>\n";
+  document.getElementById('kml').href =
+    URL.createObjectURL(new Blob([kmlText], { type: 'application/vnd.google-earth.kml+xml' }));
+
+  // ---------- погода ----------
+  var WHEN = ["2026-09-04T13:00", "2026-09-04T16:00", "2026-09-04T18:00", "2026-09-04T19:00", "2026-09-05T10:00", "2026-09-05T11:00", "2026-09-05T14:00", "2026-09-05T13:00", "2026-09-05T09:00", "2026-09-05T17:00", "2026-09-06T10:00", "2026-09-06T13:00", "2026-09-06T14:00", "2026-09-06T16:00", "2026-09-06T17:00", "2026-09-04T12:00", "2026-09-04T12:00"];
+
+  var WMO = { 0:'ясно', 1:'почти ясно', 2:'облачно с прояснениями', 3:'пасмурно',
+    45:'туман', 48:'туман с изморозью', 51:'морось', 53:'морось', 55:'сильная морось',
+    61:'слабый дождь', 63:'дождь', 65:'сильный дождь', 66:'ледяной дождь', 67:'ледяной дождь',
+    71:'слабый снег', 73:'снег', 75:'сильный снег', 77:'снежные зёрна',
+    80:'ливни', 81:'сильные ливни', 82:'очень сильные ливни',
+    85:'снежные ливни', 86:'снежные ливни',
+    95:'гроза', 96:'гроза с градом', 99:'гроза с градом' };
+
+  function wmo(c) { return WMO[c] || 'без данных'; }
+  function t1(v) { return (Math.round(v * 10) / 10).toString().replace('.', ',') + '°'; }
+
+  function wxFail() {
+    document.querySelectorAll('.wx').forEach(function (el) { el.classList.remove('pending'); });
+    var n = document.getElementById('wxstale');
+    if (n) n.textContent = 'Онлайн-обновление недоступно — показан снимок прогноза от 3 сентября. ' +
+                           'Свежие цифры смотри в приложении или открой страницу на нормальном хостинге.';
+  }
+
+  document.querySelectorAll('.wx').forEach(function (el) { el.classList.add('pending'); });
+
+  var lats = stops.map(function (s) { return s.ll[0].toFixed(5); }).join(',');
+  var lons = stops.map(function (s) { return s.ll[1].toFixed(5); }).join(',');
+
+  fetch('https://api.open-meteo.com/v1/forecast?latitude=' + lats + '&longitude=' + lons +
+        '&hourly=temperature_2m,precipitation_probability,weather_code,wind_speed_10m,precipitation,wind_gusts_10m' +
+        '&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weather_code' +
+        '&start_date=2026-09-04&end_date=2026-09-06&timezone=Europe%2FWarsaw')
+    .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+    .then(function (d) {
+      var arr = Array.isArray(d) ? d : [d];
+
+      stops.forEach(function (s, i) {
+        var f = arr[i]; if (!f) return;
+        var k = f.hourly.time.indexOf(WHEN[i]); if (k < 0) return;
+        var t = f.hourly.temperature_2m[k],
+            p = f.hourly.precipitation_probability[k],
+            c = f.hourly.weather_code[k],
+            w = f.hourly.wind_speed_10m[k];
+        s.wx = t1(t) + ', ' + wmo(c) + ', осадки ' + p + '%, ветер ' + Math.round(w) + ' км/ч';
+        var el = document.querySelector('.wx[data-wx="' + i + '"]');
+        if (el) {
+          el.classList.remove('pending');
+          el.textContent = t1(t) + ' · ' + wmo(c) + ' · ' + p + '%';
+          if (p >= 50) el.classList.add('wet');
+        }
+        markers[i].setPopupContent('<strong>' + s.n + '</strong>' + s.t +
+          '<br><br><em>' + WHEN[i].slice(8, 10) + '.09, ' + WHEN[i].slice(11, 16) +
+          ': ' + s.wx + '</em>');
+      });
+
+      var COLS = [1, 7, 0];                                  // Чоха, Гала Изерска, Вроцлав
+      var DAYS = ['Пятница', 'Суббота', 'Воскресенье'];
+      var WIN = [['ночь', '0–6', 0, 6], ['утро', '6–12', 6, 12],
+                 ['день', '12–18', 12, 18], ['вечер', '18–24', 18, 24]];
+      var html = '', gust = 0;
+
+      DAYS.forEach(function (dn, day) {
+        WIN.forEach(function (w, wi) {
+          var cells = COLS.map(function (ci) {
+            var f = arr[ci]; if (!f) return '<td class="dry">—</td>';
+            var mm = 0, pp = 0;
+            for (var k = day * 24 + w[2]; k < day * 24 + w[3]; k++) {
+              mm += f.hourly.precipitation[k] || 0;
+              pp = Math.max(pp, f.hourly.precipitation_probability[k] || 0);
+              gust = Math.max(gust, arr[7] ? (arr[7].hourly.wind_gusts_10m[k] || 0) : 0);
+            }
+            mm = Math.round(mm * 10) / 10;
+            return mm >= 0.2
+              ? '<td class="rain">' + String(mm).replace('.', ',') + ' мм</td>'
+              : '<td class="dry">' + pp + '%</td>';
+          }).join('');
+          html += '<tr' + (wi === 0 ? ' class="night"' : '') + '><td class="when">' +
+                  (wi === 0 ? dn + '<small>' + w[0] + ', ' + w[1] + '</small>'
+                            : '<small style="font-weight:600">' + w[0] + ', ' + w[1] + '</small>') +
+                  '</td>' + cells + '</tr>';
+        });
+      });
+      document.getElementById('wxdays').innerHTML = html;
+
+      var sat = arr[7];
+      if (sat) {
+        var g = 0, tmin = 99, tmax = -99;
+        for (var k = 24; k < 48; k++) {
+          g = Math.max(g, sat.hourly.wind_gusts_10m[k] || 0);
+          tmin = Math.min(tmin, sat.hourly.temperature_2m[k]);
+          tmax = Math.max(tmax, sat.hourly.temperature_2m[k]);
+        }
+        document.getElementById('wxwind').innerHTML =
+          'Суббота на Гале Изерской: ' + t1(tmin) + '…' + t1(tmax) +
+          ', порывы до ' + Math.round(g) + ' км/ч. На открытом плато ветер решает больше, чем дождь.';
+      }
+    })
+    .then(function () {
+      var n = document.getElementById('wxstale'); if (n) n.textContent = '';
+    })
+    .catch(wxFail);
+
+  document.querySelectorAll('.mgram img').forEach(function (img) {
+    var row = img.parentNode.dataset.mg;
+    img.src = 'https://www.meteo.pl/um/metco/mgram_pict.php?ntype=0u&row=' +
+              row + '&col=150&lang=pl&_=' + Date.now();
+    img.onerror = function () {
+      img.parentNode.outerHTML =
+        '<p style="font-family:Georgia,serif;font-size:14px;color:#5c6764">' +
+        'Метеорограмма ICM не загрузилась — открой meteo.pl напрямую.</p>';
+    };
+  });
+
+  fetch('https://danepubliczne.imgw.pl/api/data/synop')
+    .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+    .then(function (d) {
+      var pick = ['Wrocław', 'Jelenia Góra', 'Śnieżka'];
+      var names = { 'Wrocław': 'Вроцлав, 128 м', 'Jelenia Góra': 'Еленя-Гура, 342 м', 'Śnieżka': 'Снежка, 1602 м' };
+      var html = pick.map(function (p) {
+        var s = d.filter(function (x) { return x.stacja === p; })[0];
+        if (!s) return '';
+        return '<tr><td>' + names[p] + '</td><td>' + s.temperatura.replace('.', ',') + '°</td>' +
+               '<td>ветер ' + s.predkosc_wiatru + ' м/с</td>' +
+               '<td>осадки ' + String(s.suma_opadu).replace('.', ',') + ' мм<br>' +
+               '<span style="color:#5c6764;font-weight:400">' + s.godzina_pomiaru + ':00, ' + s.data_pomiaru + '</span></td></tr>';
+      }).join('');
+      document.getElementById('wxnow').innerHTML = html ||
+        '<tr><td colspan="4" style="font-weight:400">Станции не ответили.</td></tr>';
+    })
+    .catch(function () {});
+
+  document.querySelectorAll('.stop-name').forEach(function (el) {
+    el.addEventListener('click', function () {
+      var i = +el.dataset.go;
+      show('all');
+      btns.forEach(function (o) { o.setAttribute('aria-pressed', String(o.dataset.day === 'all')); });
+      map.setView(stops[i].ll, 13, { animate: false });
+      markers[i].openPopup();
+      document.getElementById('map').scrollIntoView({ block: 'center' });
+    });
+  });
+})();
+</script>
